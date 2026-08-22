@@ -1,0 +1,85 @@
+services:
+  fronted:
+    build: ./fronted
+    container_name: fronted
+    depends_on:
+      - backend
+    env_file: .env
+    secrets:
+      - nginx_ssl_cert
+      - nginx_ssl_key
+    networks:
+      - inception
+    volumes:
+      - wp_data:/var/www/html
+    ports:
+      - "80:80"
+      - "443:443"
+
+  backend:
+    build: ./backend
+    container_name: wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file: .env
+    secrets:
+      - mariadb_password
+      - wordpress_admin_password
+      - wordpress_user_password
+    networks:
+      - inception
+    volumes:
+      - wp_data:/var/www/html
+
+  database:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    env_file: .env
+    secrets:
+      - mariadb_root_password
+      - mariadb_password
+    networks:
+      - inception
+    volumes:
+      - db_data:/var/lib/mysql
+
+  redis:
+    build: ./requirements/redis
+    container_name: redis
+    networks:
+      - inception
+
+networks:
+  inception:
+    driver: bridge
+
+volumes:
+  wp_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/data/wordpress
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/data/mariadb
+
+secrets:
+  nginx_ssl_cert:
+    file: ./secrets/ssl/nginx.crt
+  nginx_ssl_key:
+    file: ./secrets/ssl/nginx.key
+  mariadb_root_password:
+    file: ./secrets/mariadb_root_password
+  mariadb_password:
+    file: ./secrets/mariadb_password
+  wordpress_admin_password:
+    file: ./secrets/wordpress_admin_password
+  wordpress_user_password:
+    file: ./secrets/wordpress_user_password
