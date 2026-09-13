@@ -1,8 +1,11 @@
 {
-  "name": "@ft_flex/source",
+  "name": "ft_flex",
   "private": true,
   "scripts": {
     "build": "pnpm -r run build",
-    "dev": "pnpm --parallel run dev"
+    "dev": "pnpm --parallel run dev",
+    "dev:server": "pnpm --filter @ft_flex/server run dev",
+    "dev:provider": "pnpm --filter @ft_flex/provider run dev",
+    "dev:client": "pnpm --filter @ft_flex/client run dev"
   }
 }
